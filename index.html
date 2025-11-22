@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NodeMind-AI | The Future of Logic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class", // Enables manual toggling
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: ['"Fira Code"', "monospace"],
+              sans: ['"Inter"', "sans-serif"],
+            },
+            animation: {
+              blink: "blink 1s step-end infinite",
+              float: "float 6s ease-in-out infinite",
+            },
+            keyframes: {
+              blink: {
+                "0%, 100%": { opacity: "1" },
+                "50%": { opacity: "0" },
+              },
+              float: {
+                "0%, 100%": { transform: "translateY(0)" },
+                "50%": { transform: "translateY(-20px)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;600&family=Inter:wght@300;400;600;800&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        /* Default to Light Mode colors */
+        background-color: #ffffff;
+        color: #18181b; /* zinc-900 */
+        overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      /* Dark Mode Overrides */
+      .dark body {
+        background-color: #09090b; /* zinc-950 */
+        color: #ffffff;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d4d4d8;
+        border-radius: 4px;
+      } /* zinc-300 */
+      ::-webkit-scrollbar-thumb:hover {
+        background: #a1a1aa;
+      } /* zinc-400 */
+
+      .dark ::-webkit-scrollbar-track {
+        background: #09090b;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #3f3f46;
+      } /* zinc-700 */
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #52525b;
+      }
+
+      /* Glass Nav - Light */
+      .glass-nav {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      /* Glass Nav - Dark */
+      .dark .glass-nav {
+        background: rgba(9, 9, 11, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .typing-cursor::after {
+        content: "|";
+        animation: blink 1s step-end infinite;
+        color: #000;
+      }
+      .dark .typing-cursor::after {
+        color: #fff;
+      }
+
+      /* Editor Glow - Subtle Shadow instead of Color */
+      .editor-container {
+        transition: all 0.3s ease;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      }
+      .dark .editor-container {
+        box-shadow: 0 0 40px -10px rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <nav
+      class="fixed w-full z-50 glass-nav top-0 left-0 transition-colors duration-300"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-8 h-8 bg-zinc-900 dark:bg-white rounded-lg flex items-center justify-center transition-colors"
+            >
+              <i
+                class="fa-solid fa-network-wired text-white dark:text-black text-sm"
+              ></i>
+            </div>
+            <span
+              class="font-bold text-xl tracking-tight text-zinc-900 dark:text-white"
+              >NodeMind-AI</span
+            >
+          </div>
+          <div class="hidden md:flex items-center gap-6">
+            <div class="flex items-baseline space-x-8">
+              <a
+                onclick="setNavActiveComponent('home')"
+                href="#"
+                id="navHome"
+                class="text-zinc-900 dark:text-white px-3 py-2 rounded-md text-sm font-medium border-b-2 border-zinc-900 dark:border-white"
+                >Home</a
+              >
+              <a
+                onclick="setNavActiveComponent('feature')"
+                id="navFeature"
+                href="#features"
+                class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >Features</a
+              >
+              <a
+                onclick="setNavActiveComponent('demo')"
+                id="navDemo"
+                href="#demo"
+                class="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >Live Demo</a
+              >
+            </div>
+
+            <button
+              id="theme-toggle"
+              class="w-9 h-9 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+            >
+              <i class="fa-solid fa-moon dark:hidden"></i>
+              <i class="fa-solid fa-sun hidden dark:block"></i>
+            </button>
+
+            <button
+              class="bg-zinc-900 hover:bg-zinc-700 text-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-5 py-2 rounded-full text-sm font-semibold transition-all"
+            >
+              Sign In
+            </button>
+          </div>
+          <div class="-mr-2 flex md:hidden gap-4">
+            <button
+              id="mobile-theme-toggle"
+              class="text-zinc-600 dark:text-zinc-300"
+            >
+              <i class="fa-solid fa-circle-half-stroke text-xl"></i>
+            </button>
+            <button
+              class="text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white p-2"
+            >
+              <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main
+      class="relative pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden bg-white dark:bg-[#09090b] transition-colors duration-300"
+    >
+      <div
+        class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none"
+      >
+        <div
+          class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-zinc-200/50 dark:bg-zinc-800/20 rounded-full blur-[100px]"
+        ></div>
+        <div
+          class="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-zinc-300/50 dark:bg-zinc-700/10 rounded-full blur-[100px]"
+        ></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+          <div class="mb-12 lg:mb-0 text-center lg:text-left">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-mono mb-6"
+            >
+              <span class="relative flex h-2 w-2">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-black dark:bg-white opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-zinc-800 dark:bg-zinc-200"
+                ></span>
+              </span>
+              v2.0 Release Candidate
+            </div>
+
+            <div
+              class="flex flex-col lg:flex-row items-center lg:items-start gap-4 mb-6"
+            >
+              <div
+                class="w-16 h-16 lg:w-20 lg:h-20 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-center shadow-sm"
+              >
+                <i
+                  class="fa-solid fa-brain text-3xl lg:text-4xl text-zinc-900 dark:text-white"
+                ></i>
+              </div>
+              <div class="h-20 flex items-center">
+                <h1
+                  id="hero-typing"
+                  class="text-4xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white typing-cursor"
+                ></h1>
+              </div>
+            </div>
+
+            <p
+              class="text-lg text-zinc-600 dark:text-zinc-400 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed"
+            >
+              The first recursive AI development environment. Design logic,
+              visualize nodes, and deploy intelligence in a single monochrome
+              workflow.
+            </p>
+
+            <div
+              class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+            >
+              <button
+                class="group relative px-8 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl overflow-hidden transition-all hover:scale-105 shadow-lg shadow-zinc-500/20 dark:shadow-none"
+              >
+                <span class="relative flex items-center gap-2">
+                  Get Started
+                  <i
+                    class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"
+                  ></i>
+                </span>
+              </button>
+              <button
+                class="px-8 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-semibold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all"
+              >
+                View Documentation
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="relative group perspective-1000 shadow-lg shadow-zinc-500/20 hover:shadow-xl hover:shadow-zinc-500/60 transition-all duration-500"
+          >
+            <div
+              id="recursive-editor-container"
+              class="editor-container relative bg-white dark:bg-[#0c0c0e] rounded-xl overflow-hidden transition-transform duration-500 group-hover:-translate-y-2 h-[500px] flex flex-col border border-zinc-200 dark:border-zinc-800"
+            >
+              <div
+                class="bg-zinc-50 dark:bg-[#18181b] px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0 transition-colors"
+              >
+                <div class="flex items-center gap-2">
+                  <div class="flex gap-1.5">
+                    <div
+                      class="w-3 h-3 rounded-full bg-zinc-300 dark:bg-zinc-600"
+                    ></div>
+                    <div
+                      class="w-3 h-3 rounded-full bg-zinc-300 dark:bg-zinc-600"
+                    ></div>
+                    <div
+                      class="w-3 h-3 rounded-full bg-zinc-300 dark:bg-zinc-600"
+                    ></div>
+                  </div>
+                </div>
+                <div
+                  class="px-3 py-1 bg-zinc-200/50 dark:bg-black/30 rounded text-xs font-mono text-zinc-500 dark:text-zinc-400 flex items-center gap-2"
+                >
+                  <i class="fa-solid fa-lock text-[10px]"></i>
+                  nodemind-preview.local
+                </div>
+                <div
+                  class="flex items-center gap-3 text-zinc-400 dark:text-zinc-600"
+                >
+                  <i
+                    class="fa-solid fa-rotate-right text-xs hover:text-black dark:hover:text-white cursor-pointer"
+                  ></i>
+                  <i
+                    class="fa-solid fa-up-right-from-square text-xs hover:text-black dark:hover:text-white cursor-pointer"
+                  ></i>
+                </div>
+              </div>
+
+              <div
+                class="relative flex-1 bg-white dark:bg-[#09090b] overflow-hidden h-full transition-colors"
+              >
+                <iframe
+                  id="recursive-frame"
+                  class="w-full h-full border-none"
+                  title="Recursive Preview"
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <section
+      id="features"
+      class="py-20 bg-zinc-50 dark:bg-[#0c0c0e] relative border-t border-zinc-200 dark:border-zinc-900 transition-colors duration-300"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2
+            id="why-heading"
+            class="text-3xl md:text-5xl font-bold mb-4 text-zinc-900 dark:text-white min-h-[60px]"
+          ></h2>
+          <div
+            class="h-1 w-20 bg-zinc-900 dark:bg-white mx-auto rounded-full"
+          ></div>
+        </div>
+
+        <div class="relative max-w-4xl mx-auto">
+          <div
+            class="relative bg-white dark:bg-[#18181b] rounded-2xl border border-zinc-200 dark:border-zinc-700 overflow-hidden shadow-xl dark:shadow-none transition-colors"
+          >
+            <div
+              class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-[#121214]"
+            >
+              <div class="flex gap-4 font-mono text-sm">
+                <button
+                  id="btn-manual"
+                  class="text-black dark:text-white font-bold flex items-center gap-2 transition-colors"
+                >
+                  <div
+                    class="w-2 h-2 rounded-full bg-black dark:bg-white animate-pulse"
+                  ></div>
+                  Human
+                </button>
+                <button
+                  id="btn-ai"
+                  class="text-zinc-400 font-bold flex items-center gap-2 transition-colors"
+                >
+                  <div class="w-2 h-2 rounded-full bg-zinc-400"></div>
+                  AI
+                </button>
+              </div>
+              <div class="text-xs text-zinc-400 font-mono">
+                processing_logic.js
+              </div>
+            </div>
+
+            <div
+              class="h-[400px] relative grid grid-cols-1 md:grid-cols-2 font-mono text-sm"
+            >
+              <div
+                class="bg-white dark:bg-[#09090b] p-6 overflow-hidden border-r border-zinc-200 dark:border-zinc-800 transition-colors"
+              >
+                <div
+                  class="flex text-zinc-400 dark:text-zinc-600 text-xs mb-2 select-none"
+                >
+                  <span class="w-6">1</span> import { NeuralNet } from
+                  'nodemind';
+                </div>
+                <div
+                  class="flex text-zinc-400 dark:text-zinc-600 text-xs mb-2 select-none"
+                >
+                  <span class="w-6">2</span>
+                </div>
+
+                <div
+                  id="code-display"
+                  class="text-zinc-800 dark:text-zinc-300 whitespace-pre-wrap transition-colors"
+                ></div>
+                <span
+                  id="code-cursor"
+                  class="inline-block w-2 h-4 bg-black dark:bg-white animate-blink align-middle"
+                ></span>
+              </div>
+
+              <div
+                class="bg-zinc-50 dark:bg-[#121214] p-6 flex flex-col items-center justify-center relative overflow-hidden transition-colors"
+              >
+                <div
+                  id="visual-loader"
+                  class="hidden absolute inset-0 bg-white/80 dark:bg-black/80 z-10 flex flex-col items-center justify-center backdrop-blur-sm"
+                >
+                  <i
+                    class="fa-solid fa-gear fa-spin text-3xl text-zinc-800 dark:text-white mb-3"
+                  ></i>
+                  <span class="text-zinc-800 dark:text-white text-xs font-mono"
+                    >OPTIMIZING LOGIC...</span
+                  >
+                </div>
+
+                <div
+                  id="human-graphic"
+                  class="text-center transition-opacity duration-500"
+                >
+                  <div
+                    class="w-20 h-20 rounded-full border-2 border-dashed border-zinc-400 flex items-center justify-center mx-auto mb-4"
+                  >
+                    <i
+                      class="fa-regular fa-keyboard text-2xl text-zinc-400"
+                    ></i>
+                  </div>
+                  <p class="text-zinc-500 dark:text-zinc-400">Manual Coding</p>
+                  <p class="text-zinc-400 dark:text-zinc-600 text-xs mt-2">
+                    High latency<br />Syntax errors probable
+                  </p>
+                </div>
+
+                <div
+                  id="ai-graphic"
+                  class="text-center opacity-0 absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-500"
+                >
+                  <div class="relative w-24 h-24 mx-auto mb-4">
+                    <div
+                      class="absolute inset-0 bg-zinc-200 dark:bg-zinc-700 rounded-full animate-ping"
+                    ></div>
+                    <div
+                      class="relative w-full h-full bg-zinc-900 dark:bg-white rounded-full flex items-center justify-center shadow-lg"
+                    >
+                      <i
+                        class="fa-solid fa-bolt text-3xl text-white dark:text-black"
+                      ></i>
+                    </div>
+                  </div>
+                  <p class="text-zinc-900 dark:text-white font-bold text-lg">
+                    NoMi-AI Accelerated
+                  </p>
+                  <p class="text-zinc-500 text-xs mt-2 font-mono">
+                    Latency: 12ms<br />Optimization: 99.8%
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="h-1 bg-zinc-200 dark:bg-zinc-800 w-full">
+              <div
+                id="video-progress"
+                class="h-full bg-zinc-900 dark:bg-white w-0 transition-all duration-100 ease-linear"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer
+      class="bg-white dark:bg-black border-t border-zinc-200 dark:border-zinc-900 pt-16 pb-8 transition-colors duration-300"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          <div class="col-span-1 md:col-span-1">
+            <div class="flex items-center gap-2 mb-4">
+              <i
+                class="fa-solid fa-network-wired text-black dark:text-white"
+              ></i>
+              <span class="font-bold text-xl text-black dark:text-white"
+                >NodeMind-AI</span
+              >
+            </div>
+            <p class="text-zinc-500 text-sm leading-relaxed">
+              Empowering the next generation of logic synthesis and neural
+              architecture.
+            </p>
+          </div>
+          <div>
+            <h3 class="text-black dark:text-white font-semibold mb-4">
+              Product
+            </h3>
+            <ul class="space-y-2 text-sm text-zinc-500">
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >Features</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >Integrations</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >Pricing</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >Changelog</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-black dark:text-white font-semibold mb-4">
+              Resources
+            </h3>
+            <ul class="space-y-2 text-sm text-zinc-500">
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >Documentation</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >API Reference</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="hover:text-black dark:hover:text-white transition-colors"
+                  >Community</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-black dark:text-white font-semibold mb-4">
+              Connect
+            </h3>
+            <div class="flex space-x-4">
+              <a
+                href="#"
+                class="w-8 h-8 rounded bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
+              >
+                <i class="fa-brands fa-twitter"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 rounded bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
+              >
+                <i class="fa-brands fa-github"></i>
+              </a>
+              <a
+                href="#"
+                class="w-8 h-8 rounded bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
+              >
+                <i class="fa-brands fa-discord"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div
+          class="border-t border-zinc-200 dark:border-zinc-900 pt-8 flex flex-col md:flex-row justify-between items-center"
+        >
+          <p class="text-zinc-500 text-sm">
+            © 2025 NodeMind-AI Inc. All rights reserved.
+          </p>
+          <div class="flex space-x-6 mt-4 md:mt-0 text-sm text-zinc-500">
+            <a href="#" class="hover:text-black dark:hover:text-white"
+              >Privacy</a
+            >
+            <a href="#" class="hover:text-black dark:hover:text-white">Terms</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // --- THEME TOGGLE LOGIC ---
+      const themeToggleBtn = document.getElementById("theme-toggle");
+      const mobileThemeBtn = document.getElementById("mobile-theme-toggle");
+
+      // Check local storage or system preference
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+
+      function toggleTheme() {
+        if (document.documentElement.classList.contains("dark")) {
+          document.documentElement.classList.remove("dark");
+          localStorage.theme = "light";
+        } else {
+          document.documentElement.classList.add("dark");
+          localStorage.theme = "dark";
+        }
+        // Re-initialize recursive frame to pick up new colors
+        initRecursiveFrame();
+      }
+
+      themeToggleBtn.addEventListener("click", toggleTheme);
+      mobileThemeBtn.addEventListener("click", toggleTheme);
+
+      // --- EXISTING ANIMATION LOGIC (UNCHANGED) ---
+
+      // 1. Hero Typewriter Effect
+      const heroText = "NodeMind-AI";
+      const heroElement = document.getElementById("hero-typing");
+      let heroIndex = 0;
+
+      function typeHero() {
+        if (heroIndex < heroText.length) {
+          heroElement.textContent += heroText.charAt(heroIndex);
+          heroIndex++;
+          setTimeout(typeHero, 150);
+        }
+      }
+
+      // 2. "Why NodeMind" Typewriter Effect
+      const whyText = "Why NodeMind-AI?";
+      const whyElement = document.getElementById("why-heading");
+      let whyIndex = 0;
+      let whyStarted = false;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !whyStarted) {
+              whyStarted = true;
+              typeWhy();
+            }
+          });
+        },
+        { threshold: 0.5 }
+      );
+
+      observer.observe(document.getElementById("features"));
+
+      function typeWhy() {
+        if (whyIndex < whyText.length) {
+          whyElement.textContent += whyText.charAt(whyIndex);
+          whyIndex++;
+          setTimeout(typeWhy, 100);
+        } else {
+          whyElement.classList.add("typing-cursor");
+        }
+      }
+
+      // 3. Recursive Iframe Logic
+      function initRecursiveFrame() {
+        if (window.self === window.top) {
+          const iframe = document.getElementById("recursive-frame");
+          if (iframe) {
+            // Wait a split second for theme class to apply before grabbing HTML
+            setTimeout(() => {
+              iframe.srcdoc = document.documentElement.outerHTML;
+            }, 50);
+          }
+        } else {
+          const innerIframe = document.getElementById("recursive-frame");
+          if (innerIframe) {
+            innerIframe.remove();
+            const container = document.getElementById(
+              "recursive-editor-container"
+            );
+            if (container) {
+              const placeholder = document.createElement("div");
+              placeholder.className =
+                "flex items-center justify-center h-full text-zinc-400 font-mono text-xs bg-zinc-50 dark:bg-[#09090b]";
+              placeholder.innerHTML = `<div class="mb-2 lg:mb-0 text-center lg:text-left">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-mono mb-6">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-black dark:bg-white opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-zinc-800 dark:bg-zinc-200"></span>
+                        </span>
+                        v2.0 Release Candidate
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row items-center lg:items-start gap-4 mb-6">
+                        <div class="w-16 h-16 lg:w-20 lg:h-20 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-center shadow-sm">
+                            <i class="fa-solid fa-brain text-3xl lg:text-4xl text-zinc-900 dark:text-white"></i>
+                        </div>
+                        <div class="h-20 flex items-center">
+                            <h1 id="hero-typing" class="text-4xl lg:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-white typing-cursor">NodeMind-AI</h1>
+                        </div>
+                    </div>
+
+                    <p class="text-md text-zinc-600 dark:text-zinc-400 mb-4 max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                        The first recursive AI development environment. Design logic, visualize nodes, and deploy intelligence in a single monochrome workflow.
+                    </p>
+                </div>`;
+              container.appendChild(placeholder);
+            }
+          }
+          // Hide navbar in recursive view for cleaner look
+          const nav = document.querySelector("nav");
+          if (nav) nav.style.display = "none";
+        }
+      }
+
+      window.onload = () => {
+        const heroEl = document.getElementById("hero-typing");
+        if (heroEl) {
+          heroEl.textContent = "";
+          setTimeout(typeHero, 500);
+        }
+        startVideoLoop();
+        initRecursiveFrame();
+      };
+
+      // 4. Central Div Simulation
+      const codeDisplay = document.getElementById("code-display");
+      const btnManual = document.getElementById("btn-manual");
+      const btnAI = document.getElementById("btn-ai");
+      const humanGraphic = document.getElementById("human-graphic");
+      const aiGraphic = document.getElementById("ai-graphic");
+      const loader = document.getElementById("visual-loader");
+      const progressBar = document.getElementById("video-progress");
+
+      const manualCode =
+        "functon createNode() {\n  const node = new Node();\n  // calculating vectors...\n  rturn node;\n}";
+      const aiCode =
+        "function createNode() {\n  const node = new Node();\n  node.optimize(Vectors.TENSOR_FLOW);\n  node.connect(CLUSTER_A);\n  return node.deploy();\n}";
+
+      async function startVideoLoop() {
+        while (true) {
+          setActiveMode("manual");
+          await typeCode(manualCode, 100, true);
+          await wait(1000);
+
+          if (loader) {
+            loader.classList.remove("hidden");
+            await wait(1500);
+            loader.classList.add("hidden");
+          }
+
+          setActiveMode("ai");
+          if (codeDisplay) codeDisplay.textContent = "";
+          await typeCode(aiCode, 10, false);
+
+          await wait(3000);
+          if (codeDisplay) codeDisplay.textContent = "";
+        }
+      }
+
+      function setNavActiveComponent(value) {
+        const NHome = document.getElementById("navHome");
+        const NFeatures = document.getElementById("navFeature");
+        const NDemo = document.getElementById("navDemo");
+
+        if (value === "home") {
+          NHome.className =
+            "text-black dark:text-white px-3 py-2 rounded-md text-sm font-medium border-b-2 border-zinc-900 dark:border-white";
+          NFeatures.className =
+            "text-zinc-400 dark:text-zinc-500 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent";
+          NDemo.className =
+            "text-zinc-400 dark:text-zinc-500 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent";
+        } else if (value === "feature") {
+          NFeatures.className =
+            "text-black dark:text-white px-3 py-2 rounded-md text-sm font-medium border-b-2 border-zinc-900 dark:border-white";
+          NHome.className =
+            "text-zinc-400 dark:text-zinc-500 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent";
+          NDemo.className =
+            "text-zinc-400 dark:text-zinc-500 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent";
+        } else if (value === "demo") {
+          NDemo.className =
+            "text-black dark:text-white px-3 py-2 rounded-md text-sm font-medium border-b-2 border-zinc-900 dark:border-white";
+          NHome.className =
+            "text-zinc-400 dark:text-zinc-500 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent";
+          NFeatures.className =
+            "text-zinc-400 dark:text-zinc-500 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent";
+        }
+      }
+
+      function setActiveMode(mode) {
+        if (!btnManual || !btnAI) return;
+
+        // Dynamic class switching based on mode and theme is hard with just classList
+        // So we handle specific text colors here
+        const isDark = document.documentElement.classList.contains("dark");
+
+        if (mode === "manual") {
+          // Active Manual
+          btnManual.className =
+            "text-black dark:text-white font-bold flex items-center gap-2 transition-colors";
+          // Inactive AI
+          btnAI.className =
+            "text-zinc-400 font-bold flex items-center gap-2 transition-colors";
+
+          if (humanGraphic) humanGraphic.style.opacity = "1";
+          if (aiGraphic) aiGraphic.style.opacity = "0";
+
+          if (progressBar) {
+            progressBar.style.width = "30%";
+            progressBar.className =
+              "h-full bg-zinc-400 transition-all duration-1000";
+          }
+        } else {
+          // Inactive Manual
+          btnManual.className =
+            "text-zinc-400 font-bold flex items-center gap-2 transition-colors";
+          // Active AI
+          btnAI.className =
+            "text-black dark:text-white font-bold flex items-center gap-2 transition-colors";
+
+          if (humanGraphic) humanGraphic.style.opacity = "0";
+          if (aiGraphic) aiGraphic.style.opacity = "1";
+
+          if (progressBar) {
+            progressBar.style.width = "100%";
+            progressBar.className =
+              "h-full bg-zinc-900 dark:bg-white transition-all duration-500";
+          }
+        }
+      }
+
+      function typeCode(text, speed, isMessy) {
+        return new Promise((resolve) => {
+          let i = 0;
+          if (!codeDisplay) {
+            resolve();
+            return;
+          }
+
+          function type() {
+            if (i < text.length) {
+              if (isMessy && Math.random() > 0.9 && i > 5) {
+                codeDisplay.textContent += "x";
+                setTimeout(() => {
+                  codeDisplay.textContent = codeDisplay.textContent.slice(
+                    0,
+                    -1
+                  );
+                  setTimeout(type, 100);
+                }, 200);
+                return;
+              }
+              codeDisplay.textContent += text.charAt(i);
+              i++;
+              const variance = isMessy ? Math.random() * 100 : 0;
+              setTimeout(type, speed + variance);
+            } else {
+              resolve();
+            }
+          }
+          type();
+        });
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+    </script>
+  </body>
+</html>
